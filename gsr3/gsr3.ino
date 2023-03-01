@@ -20,8 +20,8 @@ int lastTime = 0;
 int lastTime2 = 0;
 int lastTime3 = 0;
 
-int displayInterval = 5;
-int screenInterval = 5;
+int displayInterval = 1000;
+int screenInterval = 1000;
 int printInterval = 100;
 
 void setup() {
@@ -29,6 +29,7 @@ void setup() {
   // Start serial communications
   Serial.begin(115200);
   Serial.println("Entering Setup...");
+
   // turn on backlite
   pinMode(TFT_BACKLITE, OUTPUT);
   digitalWrite(TFT_BACKLITE, HIGH);
@@ -62,77 +63,25 @@ void setup() {
 
 void loop() {
 
-  int analogVal = analogRead(18);
+  int analogValue = analogRead(18);
 
-  int averageVal = updateFilterBuffer(analogVal);
+  int mappedValue = map(analogValue, 0, 4095, 134, 0);
 
-  updateScreenBuffer(averageVal);
+  screenBuffer[counter] = mappedValue;
 
-  updateDisplay();
+  tft.drawPixel(counter, screenBuffer[counter], ST77XX_WHITE);
 
-/*
-  if (millis() - lastTime2 > screenInterval) {
-    //updateScreenBuffer(analogVal);
-    updateScreenBuffer(averageVal);
-    lastTime2 = millis();
+  if (counter >= 240) {
+    tft.fillScreen(ST77XX_BLACK);
+    counter = 0;
   }
-
-  if (millis() - lastTime > displayInterval) {
-    updateDisplay();
-    lastTime = millis();
+  else{
+    counter++;
   }
-
-  if (millis() - lastTime3 > printInterval) {
-    printValue(averageVal);
-    lastTime3 = millis();
-  }
-*/
-
-
+  delay(10);
 }
 
-int updateFilterBuffer(int val) {
-
-  // shift values in the buffer
-  for (int i = 0; i < 19; i++) {
-    filterBuffer[i] = filterBuffer[i+1];
-    //read the analog value from pin 18 (A0)
-  }
-  filterBuffer[19] = val;
-  int sum = 0;
-
-  for (int i = 0; i < 20; i++) {
-    sum += filterBuffer[i];
-  }
-
-  filteredValue = sum / 20;
-  constrain(filteredValue, 0, 4095);
-  return filteredValue;
-}
-
-void updateScreenBuffer(int val) {
-
-  for (int i = 0; i < 239; i++) {
-    screenBuffer[i] = screenBuffer[i+1];
-    //tft.drawPixel(i, screenBuffer[i], ST77XX_WHITE);
-  }
-
-  int mappedValue = map(val, 0, 4095, 134, 0);
-  
-  screenBuffer[239] = mappedValue;
-
-}
-
-void updateDisplay() {
-
-  tft.fillScreen(ST77XX_BLACK);
-  for (int i = 0; i < 240; i++) {
-    tft.drawPixel(i, screenBuffer[i], ST77XX_WHITE);
-  }
-
-}
-
-void printValue(int val) {
+void printValues(int val) {
   Serial.print(0);
   Serial.print(",");
   Serial.print(val);
