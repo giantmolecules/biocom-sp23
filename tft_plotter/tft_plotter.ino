@@ -1,6 +1,9 @@
 // ST77XX Template
 // Brett Balogh Spring 2023
 
+// Define # of samples in filter buffer
+#define BUFLEN 5
+
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <SPI.h>
@@ -8,7 +11,7 @@
 // Use dedicated hardware SPI pins
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
-int filterBuffer[20];
+int filterBuffer[BUFLEN];
 
 int filteredValue = 0;
 
@@ -48,7 +51,7 @@ void setup() {
   tft.fillScreen(ST77XX_BLACK);
 
   // initialize filter buffer
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < BUFLEN; i++) {
     filterBuffer[i] = 0;
   }
 
@@ -94,18 +97,18 @@ void loop() {
 int updateFilterBuffer(int val) {
 
   // shift values in the buffer
-  for (int i = 0; i < 19; i++) {
+  for (int i = 0; i < BUFLEN-1; i++) {
     filterBuffer[i] = filterBuffer[i+1];
     //read the analog value from pin 18 (A0)
   }
-  filterBuffer[19] = val;
+  filterBuffer[BUFLEN-1] = val;
   int sum = 0;
 
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < BUFLEN; i++) {
     sum += filterBuffer[i];
   }
 
-  filteredValue = sum / 20;
+  filteredValue = sum / BUFLEN;
   constrain(filteredValue, 0, 4095);
   return filteredValue;
 }
