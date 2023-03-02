@@ -27,6 +27,9 @@ int displayInterval = 5;
 int screenInterval = 5;
 int printInterval = 100;
 
+int analogVal = 0;
+int averageVal = 0;
+
 void setup() {
 
   // Start serial communications
@@ -47,6 +50,12 @@ void setup() {
   // Set screen rotation. 3=landscape with usb to the left
   tft.setRotation(3);
 
+  // Set text size
+  tft.setTextSize(2);
+
+  // Set text color
+  tft.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
+
   // Fill screen with a color. Can use hex rgb values
   tft.fillScreen(ST77XX_BLACK);
 
@@ -65,31 +74,36 @@ void setup() {
 
 void loop() {
 
-  int analogVal = analogRead(18);
+  analogVal = analogRead(18);
 
-  int averageVal = updateFilterBuffer(analogVal);
+  averageVal = updateFilterBuffer(analogVal);
 
   updateScreenBuffer(averageVal);
 
   updateDisplay();
 
-/*
-  if (millis() - lastTime2 > screenInterval) {
-    //updateScreenBuffer(analogVal);
-    updateScreenBuffer(averageVal);
-    lastTime2 = millis();
-  }
-
-  if (millis() - lastTime > displayInterval) {
-    updateDisplay();
-    lastTime = millis();
-  }
-
   if (millis() - lastTime3 > printInterval) {
     printValue(averageVal);
     lastTime3 = millis();
   }
-*/
+
+  /*
+    if (millis() - lastTime2 > screenInterval) {
+      //updateScreenBuffer(analogVal);
+      updateScreenBuffer(averageVal);
+      lastTime2 = millis();
+    }
+
+    if (millis() - lastTime > displayInterval) {
+      updateDisplay();
+      lastTime = millis();
+    }
+
+    if (millis() - lastTime3 > printInterval) {
+      printValue(averageVal);
+      lastTime3 = millis();
+    }
+  */
 
 
 }
@@ -97,11 +111,11 @@ void loop() {
 int updateFilterBuffer(int val) {
 
   // shift values in the buffer
-  for (int i = 0; i < BUFLEN-1; i++) {
-    filterBuffer[i] = filterBuffer[i+1];
+  for (int i = 0; i < BUFLEN - 1; i++) {
+    filterBuffer[i] = filterBuffer[i + 1];
     //read the analog value from pin 18 (A0)
   }
-  filterBuffer[BUFLEN-1] = val;
+  filterBuffer[BUFLEN - 1] = val;
   int sum = 0;
 
   for (int i = 0; i < BUFLEN; i++) {
@@ -116,29 +130,35 @@ int updateFilterBuffer(int val) {
 void updateScreenBuffer(int val) {
 
   for (int i = 0; i < 239; i++) {
-    screenBuffer[i] = screenBuffer[i+1];
+    screenBuffer[i] = screenBuffer[i + 1];
     //tft.drawPixel(i, screenBuffer[i], ST77XX_WHITE);
   }
 
-  int mappedValue = map(val, 0, 4095, 134, 0);
-  
+  int mappedValue = map(val, 0, 4095, 134, 20);
+
   screenBuffer[239] = mappedValue;
 
 }
 
 void updateDisplay() {
 
-  tft.fillScreen(ST77XX_BLACK);
-  for (int i = 0; i < 240; i++) {
-    tft.drawPixel(i, screenBuffer[i], ST77XX_WHITE);
+  //tft.fillScreen(ST77XX_BLACK);
+  tft.fillRect(0, 18, 240, 134, ST77XX_BLACK);
+  tft.setTextColor(ST77XX_BLACK, ST77XX_WHITE);
+  for (int i = 0; i < 239; i++) {
+    //tft.drawPixel(i, screenBuffer[i], ST77XX_WHITE);
+    tft.drawLine(i, screenBuffer[i], i + 1, screenBuffer[i + 1], ST77XX_WHITE);
   }
-
+  tft.fillRect(0,0,50,18,ST77XX_WHITE);
+  tft.setCursor(0, 0);
+  tft.print(analogVal);
 }
 
 void printValue(int val) {
-  Serial.print(0);
-  Serial.print(",");
-  Serial.print(val);
-  Serial.print(",");
-  Serial.println(4095);
+  //Serial.print(0);
+  //Serial.print(",");
+  Serial.print("D ");
+  Serial.println(val);
+  //Serial.print(",");
+  //Serial.println(4095);
 }
