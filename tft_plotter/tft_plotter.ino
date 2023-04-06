@@ -155,10 +155,10 @@ void updateDisplay() {
 }
 
 void printValue(int val) {
-  //Serial.print(0);
-  //Serial.print(",");
+  Serial.print(0);
+  Serial.print(",");
   Serial.print("D ");
   Serial.println(val);
-  //Serial.print(",");
-  //Serial.println(4095);
+  Serial.print(",");
+  Serial.println(4095);
 }
