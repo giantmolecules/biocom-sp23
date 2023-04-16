@@ -406,6 +406,9 @@ void loop() {
             client.println("<tr><td>Humidity</td><td><span class=\"sensor\">");
             client.println(bme.readHumidity());
             client.println(" %</span></td></tr>"); 
+            client.println("<tr><td>Light</td><td><span class=\"sensor\">");
+            client.println(analogRead(18));
+            client.println(" %</span></td></tr>");
             client.println("</body></html>");
             
             // The HTTP response ends with another blank line
